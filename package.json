@@ -12,6 +12,6 @@
   "description": "",
   "dependencies": {
     "cors": "^2.8.6",
-    "exrpess": "^0.0.1-security"
+    "express": "^5.3.0"
   }
 }
