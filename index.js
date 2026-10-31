@@ -1,44 +1,34 @@
+require('dotenv').config(); // Importa la librería para leer variables ocultas
+
 const express = require('express');
 const cors = require('cors');
+const { Pool } = require('pg');
+
 const app = express();
 
-// Habilitar CORS para que tu PWA pueda consumir la API sin bloqueos
 app.use(cors());
 app.use(express.json());
 
-// Datos simulados (Mock) para Dunaroma
-const perfumes = [
-    {
-        id: 1,
-        nombre: "Khamrah Eau de Parfum",
-        marca: "Lattafa",
-        familiaOlfativa: "Dulce / Especiado",
-        precio: 850
-    },
-    {
-        id: 2,
-        nombre: "Acqua Di Gio",
-        marca: "Giorgio Armani",
-        familiaOlfativa: "Cítrico / Acuático",
-        precio: 2100
-    },
-    {
-        id: 3,
-        nombre: "Sauvage Elixir",
-        marca: "Dior",
-        familiaOlfativa: "Amaderado / Aromático",
-        precio: 3200
-    }
-];
+// La conexión ahora lee la variable oculta sin exponer tu contraseña
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+});
 
-// Endpoint principal para obtener la lista
-app.get('/api/productos', (req, res) => {
-    res.json(perfumes);
+// Endpoint principal para obtener la lista desde Supabase
+app.get('/api/productos', async (req, res) => {
+    try {
+        const resultado = await pool.query('SELECT * FROM productos ORDER BY id ASC');
+        res.json(resultado.rows); 
+    } catch (error) {
+        console.error('Error al consultar la base de datos:', error);
+        res.status(500).json({ error: 'Fallo al conectar con la base de datos' });
+    }
 });
 
 // Mensaje de estado en la raíz
 app.get('/', (req, res) => {
-    res.send('API de Dunaroma funcionando correctamente.');
+    res.send('API de Dunaroma funcionando y conectada a PostgreSQL de forma segura.');
 });
 
 // Configuración del puerto
